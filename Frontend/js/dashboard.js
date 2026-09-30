@@ -276,6 +276,7 @@ async function updateSlotStatus(id, status) {
 
 const reservationModalBackdrop = document.getElementById("reservationModalBackdrop");
 const reservationForm = document.getElementById("reservationForm");
+const reservationMessage = document.getElementById("reservationMessage");
 const cardPaymentDetails = document.getElementById("cardPaymentDetails");
 const paymentStep = document.getElementById("paymentStep");
 const vehicleStep = document.getElementById("vehicleStep");
@@ -329,6 +330,8 @@ function closeReservationModal() {
 
 function openReservationModal(slotId, slotLabel) {
   clearMsg();
+  reservationMessage.hidden = true;
+  reservationMessage.textContent = "";
   document.getElementById("reservationSlotId").value = slotId;
   document.getElementById("reservationSlotLabel").textContent = slotLabel;
   showReservationStep("payment");
@@ -406,7 +409,9 @@ reservationForm.addEventListener("submit", async (event) => {
     render();
     flashRow(areaId);
   } catch (error) {
-    showMsg(error.message);
+    const messages = error.fieldErrors?.map((item) => item.message) || [];
+    reservationMessage.textContent = messages.length ? [...new Set(messages)].join(" ") : error.message;
+    reservationMessage.hidden = false;
   } finally {
     submitButton.disabled = false;
   }

@@ -5,13 +5,17 @@ const vehicleSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        maxlength: 100
+        minlength: 3,
+        maxlength: 100,
+        match: /^[\p{L}\p{N}][\p{L}\p{N}\s.,'()/\-]{2,99}$/u
     },
     car_number: {
         type: String,
         required: true,
         trim: true,
-        maxlength: 20
+        minlength: 3,
+        maxlength: 20,
+        match: /^[\p{L}\p{N}][\p{L}\p{N}\s-]{2,19}$/u
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,

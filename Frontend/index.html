@@ -135,6 +135,7 @@
       <p class="reservation-copy">You are reserving <strong id="reservationSlotLabel"></strong>. Choose how you would like to pay.</p>
       <form id="reservationForm">
         <input type="hidden" id="reservationSlotId" />
+        <p id="reservationMessage" class="form-msg error" role="alert" hidden></p>
         <div class="reservation-steps" aria-label="Reservation steps">
           <span class="reservation-step active" id="paymentStepIndicator"><b>1</b> Payment</span>
           <span class="reservation-step" id="vehicleStepIndicator"><b>2</b> Vehicle details</span>
@@ -169,7 +170,7 @@
           <div class="payment-details" id="walletPaymentDetails" hidden>
             <div class="field">
               <label for="walletNumber">Mobile wallet number</label>
-              <input type="tel" id="walletNumber" inputmode="tel" autocomplete="tel" placeholder="01X XXX XXXX" pattern="01[0-9]{9}" disabled />
+              <input type="tel" id="walletNumber" inputmode="tel" autocomplete="tel" placeholder="01X XXX XXXX" pattern="01[0-9]{9}" maxlength="11" disabled />
               <small class="payment-hint">Enter the number linked to your mobile wallet.</small>
             </div>
           </div>
@@ -186,12 +187,12 @@
           </div>
           <div class="field">
             <label for="carDescription">Car description</label>
-            <input type="text" id="carDescription" maxlength="100" placeholder="e.g. White Toyota Corolla" />
+            <input type="text" id="carDescription" minlength="3" maxlength="100" required placeholder="e.g. White Toyota Corolla" />
             <small class="payment-hint">Include the make, model, and color.</small>
           </div>
           <div class="field">
             <label for="carNumber">Car number / license plate</label>
-            <input type="text" id="carNumber" maxlength="20" placeholder="Enter your license plate" />
+            <input type="text" id="carNumber" minlength="3" maxlength="20" required placeholder="Enter your license plate" />
           </div>
           <div class="modal-actions">
             <button type="button" class="btn-ghost" id="backToPayment">Back</button>
