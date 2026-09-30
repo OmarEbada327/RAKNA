@@ -39,6 +39,11 @@ const parkingSlotSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    vehicle: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Vehicle",
+        default: null
+    },
     payment_method: {
         type: String,
         enum: ["card", "wallet", "paypal"],

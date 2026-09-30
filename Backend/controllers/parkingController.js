@@ -1,4 +1,5 @@
 const ParkingSlot = require("../models/ParkingSlot");
+const Vehicle = require("../models/Vehicle");
 
 const getSlots = async (req, res, next) => {
     try {
@@ -67,19 +68,34 @@ const updateSlotStatus = async (req, res, next) => {
 
 const reserveSlot = async (req, res, next) => {
     try {
-        const slot = await ParkingSlot.findOneAndUpdate(
-            { _id: req.params.id, status: "available" },
-            {
-                status: "reserved",
-                is_reserved: true,
-                reserved_by: req.user._id,
-                reserved_at: new Date(),
-                payment_method: req.body.payment_method,
-            },
-            { new: true, runValidators: true }
-        );
+        const vehicle = await Vehicle.create({
+            description: req.body.car_description,
+            car_number: req.body.car_number,
+            owner: req.user._id,
+            parking_slot: req.params.id,
+        });
+
+        let slot;
+        try {
+            slot = await ParkingSlot.findOneAndUpdate(
+                { _id: req.params.id, status: "available" },
+                {
+                    status: "reserved",
+                    is_reserved: true,
+                    reserved_by: req.user._id,
+                    reserved_at: new Date(),
+                    payment_method: req.body.payment_method,
+                    vehicle: vehicle._id,
+                },
+                { new: true, runValidators: true }
+            );
+        } catch (error) {
+            await Vehicle.deleteOne({ _id: vehicle._id });
+            throw error;
+        }
 
         if (!slot) {
+            await Vehicle.deleteOne({ _id: vehicle._id });
             res.status(409);
             throw new Error("This parking space is no longer available");
         }

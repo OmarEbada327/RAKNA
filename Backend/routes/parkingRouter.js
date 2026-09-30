@@ -40,6 +40,10 @@ router.post(
     protect,
     [
         param("id").isMongoId().withMessage("Parking slot id is invalid"),
+        body("car_description").trim().notEmpty().isLength({ max: 100 })
+            .withMessage("Enter a car description up to 100 characters"),
+        body("car_number").trim().notEmpty().isLength({ max: 20 })
+            .withMessage("Enter a car number up to 20 characters"),
         body("payment_method").isIn(["card", "wallet", "paypal"])
             .withMessage("Choose card, mobile wallet, or PayPal"),
         body("cardholder_name")

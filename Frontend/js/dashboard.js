@@ -277,6 +277,10 @@ async function updateSlotStatus(id, status) {
 const reservationModalBackdrop = document.getElementById("reservationModalBackdrop");
 const reservationForm = document.getElementById("reservationForm");
 const cardPaymentDetails = document.getElementById("cardPaymentDetails");
+const paymentStep = document.getElementById("paymentStep");
+const vehicleStep = document.getElementById("vehicleStep");
+const paymentStepIndicator = document.getElementById("paymentStepIndicator");
+const vehicleStepIndicator = document.getElementById("vehicleStepIndicator");
 const walletPaymentDetails = document.getElementById("walletPaymentDetails");
 const cardInputs = [...cardPaymentDetails.querySelectorAll("input")];
 const walletInput = document.getElementById("walletNumber");
@@ -317,15 +321,17 @@ document.getElementById("cardExpiry").addEventListener("input", (event) => {
 });
 
 function closeReservationModal() {
-  reservationModalBackdrop.hidden = true;
   reservationForm.reset();
   setPaymentMethod("card");
+  showReservationStep("payment");
+  reservationModalBackdrop.hidden = true;
 }
 
 function openReservationModal(slotId, slotLabel) {
   clearMsg();
   document.getElementById("reservationSlotId").value = slotId;
   document.getElementById("reservationSlotLabel").textContent = slotLabel;
+  showReservationStep("payment");
   reservationModalBackdrop.hidden = false;
   setPaymentMethod(reservationForm.querySelector('input[name="paymentMethod"]:checked').value);
   reservationForm.querySelector('input[name="paymentMethod"]:checked').focus();
@@ -336,8 +342,35 @@ reservationModalBackdrop.addEventListener("click", (event) => {
   if (event.target === reservationModalBackdrop) closeReservationModal();
 });
 
+function showReservationStep(step) {
+  const showPayment = step === "payment";
+  paymentStep.hidden = !showPayment;
+  paymentStep.disabled = !showPayment;
+  vehicleStep.hidden = showPayment;
+  vehicleStep.disabled = showPayment;
+  paymentStepIndicator.classList.toggle("active", showPayment);
+  paymentStepIndicator.classList.toggle("complete", !showPayment);
+  vehicleStepIndicator.classList.toggle("active", !showPayment);
+  if (showPayment) {
+    reservationForm.querySelector('input[name="paymentMethod"]:checked').focus();
+  } else {
+    document.getElementById("carDescription").focus();
+  }
+}
+
+document.getElementById("continueToVehicle").addEventListener("click", () => {
+  if (!reservationForm.reportValidity()) return;
+  showReservationStep("vehicle");
+});
+
+document.getElementById("backToPayment").addEventListener("click", () => {
+  showReservationStep("payment");
+});
+
 reservationForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!reservationForm.reportValidity()) return;
+
   const slotId = document.getElementById("reservationSlotId").value;
   const paymentMethod = reservationForm.querySelector('input[name="paymentMethod"]:checked').value;
   const paymentDetails = paymentMethod === "card"
@@ -356,7 +389,12 @@ reservationForm.addEventListener("submit", async (event) => {
   try {
     const updatedSlot = await apiFetch(`/parking/slots/${slotId}/reserve`, {
       method: "POST",
-      body: JSON.stringify({ payment_method: paymentMethod, ...paymentDetails }),
+      body: JSON.stringify({
+        payment_method: paymentMethod,
+        car_description: document.getElementById("carDescription").value.trim(),
+        car_number: document.getElementById("carNumber").value.trim(),
+        ...paymentDetails,
+      }),
     });
     const areaId = typeof updatedSlot.area === "object" ? updatedSlot.area._id : updatedSlot.area;
     const list = slotsByArea[areaId] || [];
@@ -368,7 +406,6 @@ reservationForm.addEventListener("submit", async (event) => {
     render();
     flashRow(areaId);
   } catch (error) {
-    closeReservationModal();
     showMsg(error.message);
   } finally {
     submitButton.disabled = false;
