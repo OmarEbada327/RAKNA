@@ -41,7 +41,7 @@ const parkingSlotSchema = new mongoose.Schema({
     },
     payment_method: {
         type: String,
-        enum: ["card", "wallet", "cash"],
+        enum: ["card", "wallet", "paypal"],
         default: null
     },
 }, { timestamps: true });

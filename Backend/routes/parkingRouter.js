@@ -40,8 +40,8 @@ router.post(
     protect,
     [
         param("id").isMongoId().withMessage("Parking slot id is invalid"),
-        body("payment_method").isIn(["card", "wallet", "cash"])
-            .withMessage("Choose card, mobile wallet, or cash"),
+        body("payment_method").isIn(["card", "wallet", "paypal"])
+            .withMessage("Choose card, mobile wallet, or PayPal"),
         body("cardholder_name")
             .if(body("payment_method").equals("card"))
             .trim().notEmpty().withMessage("Cardholder name is required"),
