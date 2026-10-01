@@ -14,6 +14,7 @@ const { protect } = require("../middleware/auth");
 const { notFound, errorHandler } = require("../middleware/errorHandler");
 const User = require("../models/user");
 const ParkingSlot = require("../models/ParkingSlot");
+const Vehicle = require("../models/Vehicle");
 const { register, login } = require("../controllers/authController");
 const { getSlots, createSlot, updateSlotStatus, reserveSlot } = require("../controllers/parkingController");
 const connectDB = require("../db/db");
@@ -153,7 +154,11 @@ test("parking controllers cover listing, creation, invalid status, update, and m
 
 test("a user can reserve an available slot with a payment method", async () => {
     const originalReserve = ParkingSlot.findOneAndUpdate;
+    const originalVehicleCreate = Vehicle.create;
+    const originalVehicleDelete = Vehicle.deleteOne;
     try {
+        Vehicle.create = async (data) => ({ _id: "vehicle-1", ...data });
+        Vehicle.deleteOne = async () => ({ deletedCount: 1 });
         ParkingSlot.findOneAndUpdate = async (filter, update, options) => {
             assert.deepEqual(filter, { _id: "slot-1", status: "available" });
             assert.equal(update.status, "reserved");
@@ -167,7 +172,7 @@ test("a user can reserve an available slot with a payment method", async () => {
 
         const reserved = await invoke(reserveSlot, {
             params: { id: "slot-1" },
-            body: { payment_method: "wallet" },
+            body: { payment_method: "wallet", car_description: "Toyota Corolla", car_number: "ABC-123" },
             user: { _id: "user-1" },
         });
         assert.equal(reserved.res.statusCode, 200);
@@ -176,13 +181,15 @@ test("a user can reserve an available slot with a payment method", async () => {
         ParkingSlot.findOneAndUpdate = async () => null;
         const unavailable = await invoke(reserveSlot, {
             params: { id: "slot-1" },
-            body: { payment_method: "card" },
+            body: { payment_method: "card", car_description: "Toyota Corolla", car_number: "ABC-123" },
             user: { _id: "user-1" },
         });
         assert.equal(unavailable.res.statusCode, 409);
         assert.equal(unavailable.error.message, "This parking space is no longer available");
     } finally {
         ParkingSlot.findOneAndUpdate = originalReserve;
+        Vehicle.create = originalVehicleCreate;
+        Vehicle.deleteOne = originalVehicleDelete;
     }
 });
 
@@ -203,7 +210,9 @@ test("error, not-found, and database helpers handle failures", async () => {
 
     const originalUri = process.env.MONGO_URI;
     const originalConnect = mongoose.connect;
+    const originalLog = console.log;
     try {
+        console.log = () => {};
         delete process.env.MONGO_URI;
         await assert.rejects(connectDB(), /MONGO_URI is not configured/);
         process.env.MONGO_URI = "mongodb://test";
@@ -213,6 +222,7 @@ test("error, not-found, and database helpers handle failures", async () => {
         await assert.rejects(connectDB(), /Database unavailable/);
     } finally {
         mongoose.connect = originalConnect;
+        console.log = originalLog;
         if (originalUri === undefined) delete process.env.MONGO_URI;
         else process.env.MONGO_URI = originalUri;
     }
