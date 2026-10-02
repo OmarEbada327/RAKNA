@@ -17,7 +17,7 @@ const ParkingSlot = require("../models/ParkingSlot");
 const Vehicle = require("../models/Vehicle");
 const { register, login } = require("../controllers/authController");
 const { getSlots, createSlot, updateSlotStatus, reserveSlot } = require("../controllers/parkingController");
-const connectDB = require("../db/db");
+const connectDB = require("../DB/db");
 const { DEFAULT_ADMIN_CREDENTIALS } = require("../seed/seed");
 
 const response = () => ({

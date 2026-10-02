@@ -1,5 +1,5 @@
 const dotenv = require("dotenv");
-const connectDB = require("../db/db");
+const connectDB = require("../DB/db");
 const User = require("../models/user");
 const ParkingArea = require("../models/ParkingArea");
 const ParkingSlot = require("../models/ParkingSlot");

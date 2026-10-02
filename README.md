@@ -34,8 +34,8 @@
 1. Clone the repository and enter the backend directory.
 
    ```bash
-   git clone <your-repository-url>
-   cd Competition/Backend
+   git clone "https://github.com/OmarEbada327/RAKNA.git"
+   cd Backend
    ```
 
 2. Install dependencies.
